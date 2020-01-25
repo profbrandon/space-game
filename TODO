@@ -1,0 +1,15 @@
+
+* Make world saving more memory efficient (don't save as strings)
+
+* Implement loading worlds from world menu.
+
+* World selection menu (Almost Done)
+
+* More thorough commenting
+
+* Perhaps move more functionality into the World class.
+
+* Implement psuedo random number generator for object generation
+  based on seed and position values.
+
+* Improve the message system between panels
