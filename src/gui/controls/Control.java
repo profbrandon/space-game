@@ -2,6 +2,7 @@
 import java.util.List;
 import java.util.ArrayList;
 
+import java.awt.Graphics;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
@@ -49,6 +50,7 @@ abstract class Control implements MouseListener, KeyListener
 
     /**
      * Returns whether the specified position is over the button.
+     * 
      * @param x the x position
      * @param y the y position
      */
@@ -58,15 +60,32 @@ abstract class Control implements MouseListener, KeyListener
                this.topY <= y && y <= this.bottomY;
     }
 
+    /**
+     * Sets the internal visibility of this object
+     *
+     * @param visible the visibility
+     */
     public void setVisible (boolean visible)
     {
         this.visible = visible;
     }
 
+    /**
+     * Sets the internal disabled state of this object
+     *
+     * @param disable the disabled state
+     */
     public void setDisabled (boolean disable)
     {
         this.disabled = disable;
     }
+
+    /**
+     * Empty paint method
+     *
+     * @param g the graphics environment
+     */
+    public void paint (Graphics g) { }
 
     // KeyListener Methods
 

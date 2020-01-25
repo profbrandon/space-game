@@ -13,7 +13,7 @@ class Button extends Control
     // Fields
 
     private String text;
-    private int textWidth;
+    private int    textWidth;
 
     private Color color;
     private Color normalColor;
@@ -25,6 +25,7 @@ class Button extends Control
 
     /**
      * Constructs a button with the specified attributes.
+     * 
      * @param text the button text
      * @param x the button's center x position
      * @param y the button's center y position
@@ -35,26 +36,28 @@ class Button extends Control
      */
     public Button (String text, int x, int y, int width, int height, Color color, Action action)
     {
-        this.text    = text;
-        this.x       = x;
-        this.y       = y;
-        this.width   = width;
-        this.height  = height;
-        this.color   = color;
-        this.visible = true;
-        this.clicked = false;
-        this.disabled = false;
+        this.text = text;
 
-        this.normalColor  = color;
-        this.clickedColor = ColorUtil.scale (color, 0.75);
+        this.textWidth = (text.length () == 0) ? 0
+                       : text.length () * 4 + (text.length () - 1);
+
+        this.x      = x;
+        this.y      = y;
+        this.width  = width;
+        this.height = height;
 
         this.leftX   = this.x - (this.width / 2);
         this.rightX  = this.leftX + this.width;
         this.topY    = this.y - (this.height / 2);
         this.bottomY = this.topY + this.height;
 
-        this.textWidth = (text.length () == 0) ? 0
-                       : text.length () * 4 + (text.length () - 1);
+        this.visible  = true;
+        this.clicked  = false;
+        this.disabled = false;
+
+        this.color        = color;
+        this.normalColor  = color;
+        this.clickedColor = ColorUtil.scale (color, 0.75);
 
         this.action  = action;
     }
@@ -64,6 +67,7 @@ class Button extends Control
     /**
      * @param g the graphics enviornment to draw the button on
      */
+    @Override
     public void paint (Graphics g)
     {
         if (!this.visible) return;
@@ -93,14 +97,20 @@ class Button extends Control
         g.setFont (originalFont);
     }
 
+    /**
+     * Resets the button
+     */
     public void reset ()
     {
-        this.color   = this.normalColor;
-        this.clicked = false;
+        this.color    = this.normalColor;
+        this.clicked  = false;
+        this.visible  = true;
+        this.disabled = false;
     }
 
     // MouseListener Methods
 
+    @Override
     public void mouseReleased (MouseEvent e)
     {
         if (clicked)
@@ -111,6 +121,7 @@ class Button extends Control
         }
     }
 
+    @Override
     public void mousePressed (MouseEvent e)
     {
         if (!this.disabled && this.visible && !this.clicked && this.over (e.getX (), e.getY ()))
