@@ -40,7 +40,12 @@ abstract class Control implements MouseListener, KeyListener
 
     public void addControlListener (ControlListener cl)
     {
-        listeners.add (cl);
+        this.listeners.add (cl);
+    }
+
+    public void removeControlListener (ControlListener cl)
+    {
+        this.listeners.remove (cl);
     }
 
     public void updateControlListeners (ControlEvent e)

@@ -17,15 +17,20 @@ class World
 {
     // Static Fields
 
-    private static final int RENDER_DIST = 30;
+    private static final int RENDER_DIST = 25;
     private static final int MAX_CHUNKS  = (1 + RENDER_DIST) * (1 + RENDER_DIST);
 
     // Fields
 
     private Pseudo random;
     private String name;
+
     private Map<ChunkCoord, Chunk> chunkMap;
     private List<Chunk> loaded;
+
+    private Map<ChunkCoord, List<SCObject>> objectMap;
+    private List<SCObject> objects;
+
     private Ship player;
     private ChunkCoord center;
 
@@ -42,6 +47,9 @@ class World
         
         this.chunkMap = new HashMap<> ();
         this.loaded = new ArrayList<> ();
+
+        this.objectMap = new HashMap<> ();
+        this.objects = new ArrayList<> ();
 
         this.player = new Ship ("textures/ship.png");
         this.center = null;
@@ -63,7 +71,20 @@ class World
         {
             File worlds = new File ("../data/worlds/worlds.txt");
 
+            Scanner scanner = new Scanner (worlds);
+
+            List<String> lines = new ArrayList<> ();
+
+            while (scanner.hasNext ())
+            {
+                lines.add (scanner.nextLine ());
+            }
+
+            scanner.close ();
+
             PrintWriter pw = new PrintWriter (worlds);
+
+            for (String line : lines) pw.println (line);
 
             pw.println (this.name);
             pw.close ();
@@ -91,6 +112,9 @@ class World
 
         this.chunkMap = new HashMap<> ();
         this.loaded = new ArrayList<> ();
+
+        this.objectMap = new HashMap<> ();
+        this.objects = new ArrayList<> ();
     }
 
     // Methods
@@ -107,6 +131,7 @@ class World
      */
     public Chunk getChunk (ChunkCoord cc)
     {
+        // Don't load previously loaded chunks
         if (chunkMap.containsKey (cc))
         {
             return chunkMap.get (cc);
@@ -115,6 +140,7 @@ class World
         {
             Chunk chunk = null;
 
+            // Try loading a chunk from memory
             try
             {
                 File cfile = new File ("../data/worlds/" + this.name + "/chunk_" + cc.x + "_" + cc.y);
@@ -135,24 +161,55 @@ class World
                 System.out.println ("Failed to Load Chunk File: " + e);
             }
 
+            // Chunk wasn't found in memory, generate a new one
             if (chunk == null)
             {
                 chunk = new Chunk (cc);
                 chunk.setObjects (this.generate (cc));
+            }
 
-                if (loaded.size () == MAX_CHUNKS)
+            // Remove extra chunks
+            if (loaded.size () == MAX_CHUNKS)
+            {
+                Chunk toRemove = this.maxDist (loaded);
+                this.loaded.remove (toRemove);
+                this.chunkMap.remove (toRemove);
+
+                // Unload all of the objects associated with the chunk
+                if (this.objectMap.containsKey (toRemove.getChunkCoord ()))
                 {
-                    Chunk toRemove = this.maxDist (loaded);
-                    this.loaded.remove (toRemove);
-                    this.chunkMap.remove (toRemove);
-
-                    //System.out.println ("Writing Chunk at (" + toRemove.x + ", " + toRemove.y + ")");
-                    this.writeChunk (toRemove);
+                    for (SCObject obj : this.objectMap.get (toRemove.getChunkCoord ()))
+                    {
+                        this.objects.remove (obj);
+                    }
                 }
+
+                this.objectMap.remove (toRemove.getChunkCoord ());
+
+                // Write the chunk to the disk
+                this.writeChunk (toRemove);
             }
 
             this.chunkMap.put (cc, chunk);
             this.loaded.add (chunk);
+
+            // Load objects in the chunk
+            for (SCObject obj : chunk.getObjects ())
+            {
+                this.objects.add (obj);
+
+                if (objectMap.containsKey (cc))
+                {
+                    this.objectMap.get (cc).add (obj);
+                }
+                else
+                {
+                    List<SCObject> temp = new ArrayList<> ();
+                    temp.add (obj);
+
+                    this.objectMap.put (cc, temp);
+                }
+            }
 
             return chunk;
         }
@@ -278,17 +335,24 @@ class World
         });
     }
 
+    /**
+     * Method to update which chunks are 'rendered' by the world,
+     * i.e. which are loaded into program memory.
+     */
     private void render ()
     {
         if (this.player.getChunkCoord ().equals (this.center)) return;
 
         this.center = this.player.getChunkCoord ();
 
+        // Load the chunks within the render distance
         for (long x = - RENDER_DIST; x <= RENDER_DIST; ++x)
         {
             for (long y = - RENDER_DIST; y <= RENDER_DIST; ++y)
             {
-                getChunk (new ChunkCoord (this.center.x + x, this.center.y + y));
+                ChunkCoord coord = new ChunkCoord (this.center.x + x, this.center.y + y);
+
+                if (!this.chunkMap.containsKey (coord)) getChunk (coord);
             }
         }
     }
@@ -305,8 +369,6 @@ class World
      */
     public static World loadWorld (String name)
     {
-        // TODO: Load world stats from file
-
         String stats = (String) ResourceManager.loadText ("../data/worlds/" + name + "/stats").getValue ();
 
         String[] lines = stats.split ("\n");
@@ -339,5 +401,53 @@ class World
         }
 
         world.writeStats ();
+    }
+
+    /**
+     * @param name the name of the world to be deleted
+     */
+    public static void deleteWorld (String name)
+    {
+        try
+        {
+            // Delete World Directory
+            File dir = new File ("../data/worlds/" + name);
+
+            if (dir.exists ())
+            {
+                File[] contents = dir.listFiles ();
+
+                if (contents != null)
+                {
+                    for (File file : contents) file.delete ();
+                }
+            }
+
+            dir.delete ();
+
+            // Remove World from World List
+            Scanner scanner = new Scanner (new File ("../data/worlds/worlds.txt"));
+
+            List<String> lines = new ArrayList<> ();
+
+            while (scanner.hasNext ())
+            {
+                String line = scanner.nextLine ();
+
+                if (!line.equals (name)) lines.add (line);
+            }
+
+            scanner.close ();
+
+            PrintWriter pw = new PrintWriter (new File ("../data/worlds/worlds.txt"));
+
+            for (String line : lines) pw.println (line);
+
+            pw.close ();
+        }
+        catch (Exception e)
+        {
+            System.out.println ("Failed to Delete the World '" + name + "': " + e);
+        }
     }
 }

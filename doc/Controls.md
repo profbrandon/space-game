@@ -44,10 +44,12 @@ functionality.
 
 ```java
 public void addControlListener (ControlListener cl)
+
+public void removeControlListener (ControlListener cl)
 ```
 
-This methods adds the given ControlListener to an internal list of
-ControlListeners. This list is kept private so that a subclass cannot
+These methods add/remove the given ControlListener to an internal list 
+of ControlListeners. This list is kept private so that a subclass cannot
 specify which ControlListener they send updates to, instead they must
 use the next method:
 
@@ -135,10 +137,12 @@ to the menu.
 
 ```java
 public void addItem (String title, String text)
+
+public void removeItem (String title)
 ```
 
-Not surprisingly, this method adds an item with the specified title and
-text. The other most important method is:
+Not surprisingly, these methods add/remove an item with the specified title
+(and text). The other most important method is:
 
 ```java
 public String getSelected ()

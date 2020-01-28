@@ -163,6 +163,34 @@ class ScrollMenu extends Control implements ControlListener, MouseMotionListener
     }
 
     /**
+     * Removes the ScrollMenuItem from this ScrollMenu
+     * (If it exists).
+     *
+     * @param title the title of the item to remove
+     */
+    public void removeItem (String title)
+    {
+        ScrollMenuItem toRemove = null;
+
+        for (ScrollMenuItem item : this.items)
+        {
+            if (item.getTitle ().equals (title)) toRemove = item;
+        }
+
+        if (toRemove == null) return;
+
+        this.items.remove (toRemove);
+        toRemove.removeControlListener (this);
+
+        this.totalItemHeight = (items.size () == 0) ? 0
+                             : items.size () * ITEM_HEIGHT + (items.size () + 1) * ITEM_SPACING;
+
+        this.scrollBarHeight = (this.totalItemHeight <= this.height) ? 
+                               this.height : (int) (this.height * this.height / this.totalItemHeight);
+        this.scrollDisabled  = this.totalItemHeight <= this.height;
+    }
+
+    /**
      * @return null if no item is selected, otherwise the title of the item
      */
     public String getSelected ()

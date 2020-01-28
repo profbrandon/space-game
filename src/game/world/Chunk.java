@@ -72,6 +72,22 @@ class Chunk
     }
 
     /**
+     * @param obj the object to add
+     */
+    public void addObject (SCObject obj)
+    {
+        this.objects.add (obj);
+    }
+
+    /**
+     * @param obj the object to remove
+     */
+    public void removeObject (SCObject obj)
+    {
+        this.objects.remove (obj);
+    }
+
+    /**
      * Equality in the natural fashion--componentwise.
      * @param obj the object to test against
      */
