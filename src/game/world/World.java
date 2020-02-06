@@ -46,7 +46,7 @@ class World
         this.name = name;
         
         this.chunkMap = new HashMap<> ();
-        this.loaded = new ArrayList<> ();
+        this.loaded = new ArrayList<> (MAX_CHUNKS);
 
         this.objectMap = new HashMap<> ();
         this.objects = new ArrayList<> ();
@@ -73,7 +73,7 @@ class World
 
             Scanner scanner = new Scanner (worlds);
 
-            List<String> lines = new ArrayList<> ();
+            List<String> lines = new ArrayList<> (100);
 
             while (scanner.hasNext ())
             {
@@ -154,6 +154,8 @@ class World
                     while (scanner.hasNext ()) lines.add (scanner.nextLine ());
 
                     chunk = Chunk.convert (lines);
+
+                    scanner.close ();
                 }
             }
             catch (Exception e)

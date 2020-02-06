@@ -19,6 +19,7 @@ class Chunk
     // Constant Fields
     public final long x;
     public final long y;
+    public final int hashcode;
     public final short texture;
 
     // Variable Fields
@@ -43,9 +44,48 @@ class Chunk
 
         this.texture = texture;
         this.objects = new ArrayList<> ();
+
+        this.hashcode = this.getHashCode ();
     }
 
     // Methods
+
+    /**
+     * Computes the hashcode at this position.
+     */
+    private int getHashCode ()
+    {
+        if (this.x == 0 && this.y == 0) return 1;
+
+        final int ix = (int) this.x;
+        final int iy = (int) this.y;
+
+        final int dring    = (int) Math.max (Math.abs (ix), Math.abs (iy));
+        final int enclosed = 1 + (dring * (dring - 1) << 2);
+
+        // Right
+        if (Math.abs (iy - 0.5) < ix)
+        {
+            return enclosed + (dring << 1) + dring + ix;   
+        }
+        // Left
+        if (Math.abs (iy + 0.5) < -ix)
+        {
+            return enclosed + 3 * (dring << 1) + dring + iy;
+        }
+        // Top
+        if (Math.abs (ix + 0.5) < iy)
+        {
+            return enclosed + (dring << 2) + dring - ix;
+        }
+        // Bottom
+        if (Math.abs (ix - 0.5) < -iy)
+        {
+            return enclosed + dring + ix; 
+        }
+
+        return -1;
+    }
 
     /**
      * @return the coordinate for this chunk
@@ -102,6 +142,15 @@ class Chunk
         }
 
         return this == obj;
+    }
+
+    /**
+     * The hashcode for chunks, based on the 'Ulam Spiral'.
+     */
+    @Override
+    public int hashCode ()
+    {
+        return this.hashcode;
     }
 
     public String toString ()

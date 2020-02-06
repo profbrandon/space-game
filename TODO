@@ -1,9 +1,7 @@
 
+* Chunk queue. (see chunkloading.txt)
+
 * Make world saving more memory efficient (don't save as strings)
-
-* Implement loading worlds from world menu.
-
-* World selection menu (Almost Done)
 
 * More thorough commenting
 
@@ -12,4 +10,6 @@
 * Implement psuedo random number generator for object generation
   based on seed and position values.
 
-* Improve the message system between panels
+* Improve the message system between panels (perhaps remove the
+  present system and replace it with hiding my own graphical
+  panels).

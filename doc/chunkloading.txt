@@ -1,0 +1,13 @@
+
+One possible optimization for chunk loading would be to load the chunks in the
+direction the player is traveling first (and gradually). This would spread out
+the time chunks are loaded in, potentially leading to less lag when crossing
+chunk boundaries.
+
+To potentially create the gradual unloading and the immediate loading of chunks
+I could implement a chunk queue. It would be such that if a chunk was told to
+be written, then it would be added to the queue to be written. If the chunk was
+requested, then all chunk writing would be temporarily paused, allowing for a
+potential decrease in lag as we aren't trying to read and write chunks at the
+same time. Moreover, if a chunk-read was requesed for a chunk in the to-write
+queue, it could be pulled immediately from there, saving time.
