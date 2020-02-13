@@ -103,7 +103,7 @@ class GamePanel extends GPanel implements GameListener, KeyListener
         g.drawString ("cy: " + NumUtil.formatLong (this.chunkY, 16), 90, 10);
         g.drawString ("px: " + this.centerX, 10, 25);
         g.drawString ("py: " + this.centerY, 90, 25);
-        g.drawString ("speed: " + this.speed, 10, 40);
+        g.drawString ("speed: " + (this.speed / 10.0f), 10, 40);
     }
 
     // GameListener Methods

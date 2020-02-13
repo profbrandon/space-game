@@ -18,7 +18,7 @@ class World
     // Static Fields
 
     private static final int RENDER_DIST = 25;
-    private static final int MAX_CHUNKS  = (1 + RENDER_DIST) * (1 + RENDER_DIST);
+    private static final int MAX_CHUNKS  = (1 + 2 * RENDER_DIST) * (1 + 2 * RENDER_DIST);
 
     // Fields
 
@@ -30,6 +30,8 @@ class World
 
     private Map<ChunkCoord, List<SCObject>> objectMap;
     private List<SCObject> objects;
+
+    private ChunkQueue deque;
 
     private Ship player;
     private ChunkCoord center;
@@ -52,9 +54,11 @@ class World
         this.objects = new ArrayList<> ();
 
         this.player = new Ship ("textures/ship.png");
-        this.center = null;
+        this.center = this.player.getChunkCoord ();
 
         this.random = new Pseudo (seed);
+
+        this.deque = new ChunkQueue ("../data/worlds/" + name);
         
         try
         {
@@ -106,9 +110,11 @@ class World
         this.player.setChunkY (chunkY);
         this.player.setPos (new Vec (x, y));
 
-        this.center = null;
+        this.center = this.player.getChunkCoord ();
 
         this.random = new Pseudo (seed);
+
+        this.deque = new ChunkQueue ("../data/worlds/" + name);
 
         this.chunkMap = new HashMap<> ();
         this.loaded = new ArrayList<> ();
@@ -138,30 +144,8 @@ class World
         }
         else
         {
-            Chunk chunk = null;
-
             // Try loading a chunk from memory
-            try
-            {
-                File cfile = new File ("../data/worlds/" + this.name + "/chunk_" + cc.x + "_" + cc.y);
-
-                if (cfile.exists ())
-                {
-                    Scanner scanner = new Scanner (cfile);
-
-                    List<String> lines = new ArrayList<> ();
-
-                    while (scanner.hasNext ()) lines.add (scanner.nextLine ());
-
-                    chunk = Chunk.convert (lines);
-
-                    scanner.close ();
-                }
-            }
-            catch (Exception e)
-            {
-                System.out.println ("Failed to Load Chunk File: " + e);
-            }
+            Chunk chunk = this.deque.get (cc);
 
             // Chunk wasn't found in memory, generate a new one
             if (chunk == null)
@@ -171,7 +155,7 @@ class World
             }
 
             // Remove extra chunks
-            if (loaded.size () == MAX_CHUNKS)
+            if (loaded.size () >= MAX_CHUNKS)
             {
                 Chunk toRemove = this.maxDist (loaded);
                 this.loaded.remove (toRemove);
@@ -189,7 +173,7 @@ class World
                 this.objectMap.remove (toRemove.getChunkCoord ());
 
                 // Write the chunk to the disk
-                this.writeChunk (toRemove);
+                this.deque.put (toRemove);
             }
 
             this.chunkMap.put (cc, chunk);
@@ -250,6 +234,7 @@ class World
      */
     public Ship getPlayer ()
     {
+        //System.out.printf ("\r%8d", this.deque.size ());
         return this.player;
     }
 
@@ -262,28 +247,6 @@ class World
     public List<SCObject> generate (ChunkCoord cc)
     {
         return new ArrayList<> ();
-    }
-
-    /**
-     * Writes the specified chunk to a file in the world
-     * directory.
-     *
-     * @param chunk the chunk to write
-     */
-    private void writeChunk (Chunk chunk)
-    {
-        try 
-        {
-            File file = new File ("../data/worlds/" + name + "/chunk_" + chunk.x + "_" + chunk.y);
-            PrintWriter pw = new PrintWriter (file);
-
-            pw.print (chunk.toString ());
-            pw.close ();
-        }
-        catch (Exception e)
-        {
-            System.out.println ("Error Writing Chunk at (" + chunk.x + ", " + chunk.y + "): " + e);
-        }
     }
 
     private void writeStats ()
@@ -345,17 +308,27 @@ class World
     {
         if (this.player.getChunkCoord ().equals (this.center)) return;
 
-        this.center = this.player.getChunkCoord ();
+        ChunkCoord pc = this.player.getChunkCoord ();
 
-        // Load the chunks within the render distance
+        long dx = pc.x - this.center.x;
+        long dy = pc.y - this.center.y;
+
+        this.center = pc;
+
+        // Load the new chunks within the render distance
+
+        for (long y = - RENDER_DIST; y <= RENDER_DIST; ++y)
+        {
+            ChunkCoord coord = new ChunkCoord (this.center.x + RENDER_DIST * dx, this.center.y + y);
+
+            if (!this.chunkMap.containsKey (coord)) getChunk (coord);
+        }
+
         for (long x = - RENDER_DIST; x <= RENDER_DIST; ++x)
         {
-            for (long y = - RENDER_DIST; y <= RENDER_DIST; ++y)
-            {
-                ChunkCoord coord = new ChunkCoord (this.center.x + x, this.center.y + y);
+            ChunkCoord coord = new ChunkCoord (this.center.x + x, this.center.y + RENDER_DIST * dy);
 
-                if (!this.chunkMap.containsKey (coord)) getChunk (coord);
-            }
+            if (!this.chunkMap.containsKey (coord)) getChunk (coord);
         }
     }
 
@@ -385,7 +358,15 @@ class World
             , Float.parseFloat (lines[5]) // Pos Y
         );
 
-        world.render ();
+        for (long x = - RENDER_DIST; x <= RENDER_DIST; ++x)
+        {
+            for (long y = - RENDER_DIST; y <= RENDER_DIST; ++y)
+            {
+                ChunkCoord cc = new ChunkCoord (world.center.x + x, world.center.y + y);
+
+                world.getChunk (cc);
+            }
+        }
 
         return world;
     }
@@ -399,8 +380,10 @@ class World
     {
         for (Chunk c : world.loaded)
         {
-            world.writeChunk (c);
+            world.deque.put (c);
         }
+
+        world.deque.purge ();
 
         world.writeStats ();
     }
