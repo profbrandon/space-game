@@ -62,6 +62,25 @@ class Game implements ActionListener, KeyListener
 
         Chunk[][] chunks = this.world.getLocale (player.getChunkCoord ());
 
+        // Build sprites and objects
+        List<Sprite> sprites = new ArrayList<> ();
+        List<SCObject> objects = new ArrayList<> ();
+
+        sprites.add (player);
+        objects.add (player);
+
+        for (int i = 0; i < 3; ++i)
+        {
+            for (int j = 0; j < 3; ++j)
+            {
+                sprites.addAll (chunks[i][j].getObjects ());
+                objects.addAll (chunks[i][j].getObjects ());
+            }
+        }
+
+        this.sprites = sprites;
+        this.objects = objects;
+
         GameState state = new GameState (
               this.tick
             , this.sprites

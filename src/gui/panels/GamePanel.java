@@ -95,7 +95,7 @@ class GamePanel extends GPanel implements GameListener, KeyListener
                 continue;
             }
 
-            Draw.drawImage (g, texture, x, y, this.width, this.height, 1.0f, s.getRotation ());
+            Draw.drawImage (g, texture, x, y, this.width, this.height, s.getScale (), s.getRotation ());
         }
 
         g.setColor (Color.WHITE);

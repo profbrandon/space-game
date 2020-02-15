@@ -48,6 +48,11 @@ class Vec
         return scale (this, (float) (1.0 / this.len ()));
     }
 
+    public boolean equals (Vec v)
+    {
+        return this.x == v.x && this.y == v.y;
+    }
+
     // Static Methods
 
     public static Vec scale (Vec v, float s)

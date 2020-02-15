@@ -235,6 +235,7 @@ class World
     public Ship getPlayer ()
     {
         //System.out.printf ("\r%8d", this.deque.size ());
+        System.out.print ("\r" + this.objectMap.containsKey (this.center) + "     ");
         return this.player;
     }
 
@@ -246,7 +247,13 @@ class World
      */
     public List<SCObject> generate (ChunkCoord cc)
     {
-        return new ArrayList<> ();
+        long rand = this.random.getLong (cc.x, cc.y);
+
+        List<SCObject> objects = new ArrayList<> ();
+
+        //if (rand % 4 == 0) objects.add (new Star ("textures/star.png", cc.x, cc.y));
+
+        return objects;
     }
 
     private void writeStats ()

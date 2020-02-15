@@ -21,6 +21,7 @@ class Ship extends SCObject implements KeyListener
         this.rotation = 0;
         this.path     = path;
         this.texture  = 0;
+        this.scale    = 1.0f;
 
         this.mass = 0.00001f;
         this.pos  = pos;

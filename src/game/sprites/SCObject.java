@@ -136,6 +136,8 @@ abstract class SCObject extends Sprite
     {
         Vec r = Vec.sub (p1.pos, p2.pos);
 
+        if (r.equals (Vec.ZERO)) return Vec.ZERO;
+
         return Vec.scale (r.normal (), G_CONST * p1.mass * p2.mass / r.len2 ());
     }
 }

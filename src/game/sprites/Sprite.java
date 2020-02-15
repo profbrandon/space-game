@@ -14,6 +14,7 @@ abstract class Sprite
     protected float rotation;
 
     protected String path;
+    protected float scale = 1;
     protected int texture = 0;
     protected List<BufferedImage> textureSheet = new ArrayList<> ();
 
@@ -45,5 +46,10 @@ abstract class Sprite
     public float getRotation ()
     {
         return (float) (2 * Math.PI * this.rotation);
+    }
+
+    public float getScale ()
+    {
+        return this.scale;
     }
 }
