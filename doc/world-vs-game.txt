@@ -1,0 +1,6 @@
+
+Some functionality of the game class should be re-implemented as
+world functionality.
+
+The Game class should contain information related to the current
+status of the game, including what is visible, 
